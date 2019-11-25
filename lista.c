@@ -6,14 +6,14 @@ void list_add_end(list **p, int value)
 	list ** marker = p;
 	list *new_el = (list*)malloc(sizeof(list));
 
-	while ((*marker)->next)
+	while (*marker)
 	{
 		marker = &(*marker)->next;
 	}
 	new_el->prev = *marker;
 	new_el->data = value;
 	new_el->next = NULL;
-	(*marker)->next = new_el;
+	(*marker) = new_el;
 }
 
 void list_add_start(list **p, int value)
@@ -45,21 +45,11 @@ void list_show(list *p)
 		p = p->next;
 	}
 }
-void list_show_from_back(list **p) // 1 do pokazania
+void list_show_from_back(list **p)
 {
-	list **tmp, *first, *rest;
-	tmp = p;
-	if (tmp == NULL)
-		return;
-	first = *tmp;
-	rest = (*tmp)->next;
-	if (rest == NULL)
-		return;
-	list_reverse_rek(&rest);
-	first->next->next = first;
-	first->next = NULL;
-	*tmp = rest;
-	list_show(*tmp);
+	list_reverse(p);
+	list_show(*p);
+	list_reverse(p);
 }
 
 void list_delete_first(list **p)
@@ -130,6 +120,7 @@ void list_find_add_after(list **p, int value, int find)
 		list *new_el = (list*)malloc(sizeof(list));
 		new_el->data = value;
 		new_el->next = (*marker)->next;
+		new_el->prev = *marker;
 		(*marker)->next = new_el;
 	}
 	else
@@ -152,7 +143,7 @@ void list_find_add_before(list **p, int value, int find)
 	list **marker = p;
 	while (*marker != NULL)
 	{
-		if ((*marker)->next->data == find)
+		if ((*marker)->data == find)
 		{
 			flag = 1;
 			break;
@@ -163,7 +154,8 @@ void list_find_add_before(list **p, int value, int find)
 	{
 		list *new_el = (list*)malloc(sizeof(list));
 		new_el->data = value;
-		new_el->next = (*marker)->next;
+		new_el->next = *marker;
+		new_el->prev = (*marker)->prev;
 		(*marker)->next = new_el;
 	}
 	else
@@ -200,6 +192,7 @@ void list_find_delete(list **p, int find)
 	{
 		list *tmp = (*marker)->next;
 		(*marker)->next = (*marker)->next->next;
+		(*marker)->next->next->prev = tmp->prev;
 		free(tmp);
 	}
 	else
@@ -281,80 +274,7 @@ void list_to_file(list *head)
 	} while (!value); // Pêtla nie zakonczy sie do momentu podania pliku z rozszerzeniem txt
 }
 
-void list_delete_all_found_not_rek(list **p, int value) // 2 zadanie
-{
-	while (list_find(p,value))
-	{
-		list_find_delete(p, value);
-	}
-}
-
-void list_delete_all_found_rek(list **p, int value)  // 2 zadanie
-{
-	if (*p != NULL)
-	{
-		int deleted = 0;
-		if ((*p)->data == value)
-		{
-				list *tmp = *p;
-				*p = (*p)->next;
-				free(tmp);
-				deleted = 1;
-		}
-		if (deleted)
-			list_delete_all_found_rek(p, value);
-		else
-			list_delete_all_found_rek(&(*p)->next, value);
-	}
-}
-
-int list_count(list **p, int value)
-{
-	int count = 0;
-	while (*p != NULL)
-	{
-		if ((*p)->data == value)
-			count++;
-		p = &(*p)->next;
-	}
-	return count;
-}
-
-int list_value_most_common(list **p) // 3 zadanie
-{
-	list **tmp = p;
-	if (*tmp == NULL)
-		return;
-	int most_common;
-	int count = 0;
-	int count_pom;
-	while (*tmp != NULL)
-	{
-		count_pom = list_count(&(*tmp)->next, (*tmp)->data);
-		if (count < count_pom)
-		{
-			most_common = (*tmp)->data;
-			count = count_pom;
-		}
-		(*tmp) = (*tmp)->next;
-	}
-	return most_common;
-}
-
-void list_delete_indivisible(list **p, int value) // 4 zadanie
-{
-	list **marker = p;
-	while (*marker != NULL)
-	{
-		if ((*marker)->data % value != 0)
-			list_delete_all_found_rek(marker, (*marker)->data);
-		else
-			marker = &(*marker)->next;
-	}
-}
-
-
-void list_reverse(list **p) // 5 zadanie 
+void list_reverse(list **p) 
 {
 	list *prev = NULL;
 	list *cur = *p;
@@ -369,19 +289,4 @@ void list_reverse(list **p) // 5 zadanie
 		cur = next;
 	}
 	*p = prev;
-}
-
-void list_reverse_rek(list **p) // 5 zadanie
-{
-	list *first, *rest;
-	if (*p == NULL)
-		return;
-	first = *p;
-	rest = (*p)->next;
-	if (rest == NULL)
-		return;
-	list_reverse_rek(&rest);
-	first->next->next = first;
-	first->next = NULL;
-	*p = rest;
 }
