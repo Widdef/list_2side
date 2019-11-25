@@ -5,15 +5,23 @@ void list_add_end(list **p, int value)
 {
 	list ** marker = p;
 	list *new_el = (list*)malloc(sizeof(list));
-
-	while (*marker)
-	{
-		marker = &(*marker)->next;
-	}
+	if(*p == NULL)
+		while (*marker)
+		{
+			marker = &(*marker)->next;
+		}
+	else
+		while ((*marker)->next)
+		{
+			marker = &(*marker)->next;
+		}
 	new_el->prev = *marker;
 	new_el->data = value;
 	new_el->next = NULL;
-	(*marker) = new_el;
+	if (*p == NULL)
+		*marker = new_el;
+	else
+		(*marker)->next = new_el;
 }
 
 void list_add_start(list **p, int value)
@@ -68,15 +76,16 @@ void list_delete_last(list **p)
 	if (*p != NULL)
 	{
 		list **marker = p;
-		while ((*marker)->next)
+		while ((*marker)->next->next)
 		{
 			marker = &(*marker)->next;
 		}
-		list *tmp = *marker;
-		(*p)->next = NULL;
+		list *tmp = (*marker)->next;
+		(*marker)->next = NULL;
 		free(tmp);
 	}
 }
+
 
 int list_find(list **p, int value)
 {
@@ -156,7 +165,7 @@ void list_find_add_before(list **p, int value, int find)
 		new_el->data = value;
 		new_el->next = *marker;
 		new_el->prev = (*marker)->prev;
-		(*marker)->next = new_el;
+		(*marker)->prev->next = new_el;
 	}
 	else
 	{
